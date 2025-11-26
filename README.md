@@ -34,28 +34,20 @@ Download the Northwind database and create the documentation corpus:
 ```bash
 # Create data directory and download DB
 curl -L -o data/northwind.sqlite https://raw.githubusercontent.com/jpwhite3/northwind-SQLite3/main/dist/northwind.db
-
-# Create compatibility views (fixes "Order Details" spacing issues)
-sqlite3 data/northwind.sqlite <<'SQL'
-CREATE VIEW IF NOT EXISTS orders AS SELECT * FROM Orders;
-CREATE VIEW IF NOT EXISTS order_items AS SELECT * FROM "Order Details";
-CREATE VIEW IF NOT EXISTS products AS SELECT * FROM Products;
-CREATE VIEW IF NOT EXISTS customers AS SELECT * FROM Customers;
-SQL
 ```
 
 ---
 
 ## ⚖️ Assumptions & Trade-offs
 
-**Gross Margin Calculation:** The Northwind database lacks a cost field. We approximate **CostOfGoods = 0.7 × UnitPrice** when calculating margins.
+1.  **Gross Margin:** The Northwind database lacks a cost field. We approximate `CostOfGoods = 0.7 * UnitPrice` when calculating margins.
+2.  **Local Retrieval:** We use `rank_bm25` for retrieval instead of vector embeddings. This keeps the agent lightweight (no heavy model downloads) and deterministic, satisfying the "No external calls" constraint.
 
 ---
 
 ## 🏗️ Architecture (In Progress)
 
 - **Hybrid Agent:** Combines SQL (structured data) and RAG (unstructured policy/calendar data).
-- **Tools:** SQLite query executor, specialized semantic retriever.
 - **Orchestrator:** LangGraph state machine with repair loops.
 
 ---
