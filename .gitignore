@@ -205,3 +205,20 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ==========================
+# PROJECT SPECIFIC OVERRIDES
+# ==========================
+# Exclude the downloaded Northwind DB (Binary file)
+data/*.sqlite
+data/*.db
+
+# Exclude assignment output files and logs
+outputs_hybrid.jsonl
+*.log
+
+# Exclude local environment config
+.env
+
+# MY folder report txt file 
+retail_analytics_copilot_report.txt
