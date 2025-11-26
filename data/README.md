@@ -4,6 +4,5 @@ The `northwind.sqlite` database is not included in the repository to keep it lig
 
 To generate it locally, run the command found in the root README:
 ```bash
-mkdir -p data
 curl -L -o data/northwind.sqlite https://raw.githubusercontent.com/jpwhite3/northwind-SQLite3/main/dist/northwind.db
 ```
