@@ -65,16 +65,16 @@ def main():
                         final_state.update(update)
                 # ------------------------------------------
 
-                # Show Result
-                route = final_state.get("route", "unknown")
-                color = (
-                    "green"
-                    if route == "sql"
-                    else "magenta" if route == "rag" else "yellow"
-                )
-                rprint(
-                    f"👉 [bold]Router Decision:[/bold] [{color}]{route.upper()}[/{color}]"
-                )
+                # # Show Result
+                # route = final_state.get("route", "unknown")
+                # color = (
+                #     "green"
+                #     if route == "sql"
+                #     else "magenta" if route == "rag" else "yellow"
+                # )
+                # rprint(
+                #     f"👉 [bold]Router Decision:[/bold] [{color}]{route.upper()}[/{color}]"
+                # )
                 print("-" * 50)
 
     except FileNotFoundError:

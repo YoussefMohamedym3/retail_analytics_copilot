@@ -23,3 +23,21 @@ class RouterSignature(dspy.Signature):
     classification = dspy.OutputField(
         desc="The routing decision. MUST be exactly one of: ['rag', 'sql', 'hybrid']."
     )
+
+
+class PlannerSignature(dspy.Signature):
+    """
+    Review the User Question and the provided Context (definitions/calendars) to extract structured constraints for SQL.
+
+    Goal: Resolve ambiguous terms (like "Summer 1997" or "High Value") into concrete SQL-ready values.
+
+    CRITICAL INSTRUCTIONS:
+    1. Output strictly valid JSON.
+    2. Keep reasoning BRIEF (max 1 sentence). Do not explain the SQL logic, just extract the filters.
+    3. If no specific constraints are found, return "{}".
+    """
+
+    question = dspy.InputField()
+    context = dspy.InputField(desc="Retrieved definitions from the knowledge base.")
+
+    constraints = dspy.OutputField(desc="JSON-format dictionary of extracted filters.")

@@ -1,3 +1,20 @@
+
+BASELINE ROUTER EVALUATION
+--------------------------
+Date: 2025-11-27
+Model: Phi-3.5-mini-instruct (Ollama)
+
+Results:
+- Raw Model Accuracy: 83.3% (5/6)
+- System Accuracy:   100.0% (6/6)
+
+Notes:
+- Question ID 'hybrid_aov_winter_1997' caused a JSON parsing error (malformed output).
+- The 'try...except' block successfully caught this and applied the default fallback ('hybrid').
+- Since the correct route was 'hybrid', the system successfully recovered.
+
+EVIDENCE (LOG EXCERPTS):
+
 (retail_agent) jou@jou-MS-7D48:~/Youssef/retail_analytics_copilot$ python run_agent_hybrid.py
 === Retail Analytics Copilot CLI ===
 2025-11-27 09:37:45,591 - LLM - INFO - 🔌 Connecting to local Ollama model: ollama/phi3.5:3.8b-mini-instruct-q4_K_M...
@@ -70,19 +87,4 @@ Query: Per the KPI definition of gross margin, who was the top customer by gross
 (retail_agent) jou@jou-MS-7D48:~/Youssef/retail_analytics_copilot$ 
 
 
-
-
-BASELINE ROUTER EVALUATION
---------------------------
-Date: 2025-11-27
-Model: Phi-3.5-mini-instruct (Ollama)
-
-Results:
-- Raw Model Accuracy: 83.3% (5/6)
-- System Accuracy:   100.0% (6/6)
-
-Notes:
-- Question ID 'hybrid_aov_winter_1997' caused a JSON parsing error (malformed output).
-- The 'try...except' block successfully caught this and applied the default fallback ('hybrid').
-- Since the correct route was 'hybrid', the system successfully recovered.
 
