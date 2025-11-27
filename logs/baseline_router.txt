@@ -1,0 +1,88 @@
+(retail_agent) jou@jou-MS-7D48:~/Youssef/retail_analytics_copilot$ python run_agent_hybrid.py
+=== Retail Analytics Copilot CLI ===
+2025-11-27 09:37:45,591 - LLM - INFO - 🔌 Connecting to local Ollama model: ollama/phi3.5:3.8b-mini-instruct-q4_K_M...
+✅ Graph Compiled
+📂 Reading from: sample_questions_hybrid_eval.jsonl
+
+Question ID: rag_policy_beverages_return_days
+Query: According to the product policy, what is the return window (days) for unopened Beverages? Return an integer.
+⏳ Running...
+2025-11-27 09:37:45,594 - RouterNode - INFO - 🤔 Routing Question: According to the product policy, what is the retur...
+2025-11-27 09:37:45,661 - RouterNode - INFO - 👉 Route Selected: rag
+ ↳ Finished Node: router
+   Update: {'route': 'rag'}
+👉 Router Decision: RAG
+--------------------------------------------------
+Question ID: hybrid_top_category_qty_summer_1997
+Query: During 'Summer Beverages 1997' as defined in the marketing calendar, which product category had the highest total quantity sold? Return {category:str, quantity:int}.
+⏳ Running...
+2025-11-27 09:37:45,663 - RouterNode - INFO - 🤔 Routing Question: During 'Summer Beverages 1997' as defined in the m...
+2025-11-27 09:37:45,671 - RouterNode - INFO - 👉 Route Selected: hybrid
+ ↳ Finished Node: router
+   Update: {'route': 'hybrid'}
+👉 Router Decision: HYBRID
+--------------------------------------------------
+Question ID: hybrid_aov_winter_1997
+Query: Using the AOV definition from the KPI docs, what was the Average Order Value during 'Winter Classics 1997'? Return a float rounded to 2 decimals.
+⏳ Running...
+2025-11-27 09:37:45,674 - RouterNode - INFO - 🤔 Routing Question: Using the AOV definition from the KPI docs, what w...
+2025-11-27 09:37:45,700 - RouterNode - ERROR - Router failed: Adapter JSONAdapter failed to parse the LM response. 
+
+LM Response: {"reasoning": "The question requires retrieval of an average metric (Average Order Value) from specific historical data ('Winter Classics 1997') as defined by a KPI in the documents. It involves interpreting named entities ("} 
+
+Expected to find output fields in the LM response: [reasoning, classification] 
+
+Actual output fields parsed from the LM response: [reasoning] 
+
+. Defaulting to 'hybrid'.
+2025-11-27 09:37:45,701 - RouterNode - INFO - 👉 Route Selected: hybrid
+ ↳ Finished Node: router
+   Update: {'route': 'hybrid'}
+👉 Router Decision: HYBRID
+--------------------------------------------------
+Question ID: sql_top3_products_by_revenue_alltime
+Query: Top 3 products by total revenue all-time. Revenue uses Order Details: SUM(UnitPrice*Quantity*(1-Discount)). Return list[{product:str, revenue:float}].
+⏳ Running...
+2025-11-27 09:37:45,702 - RouterNode - INFO - 🤔 Routing Question: Top 3 products by total revenue all-time. Revenue ...
+2025-11-27 09:37:45,712 - RouterNode - INFO - 👉 Route Selected: sql
+ ↳ Finished Node: router
+   Update: {'route': 'sql'}
+👉 Router Decision: SQL
+--------------------------------------------------
+Question ID: hybrid_revenue_beverages_summer_1997
+Query: Total revenue from the 'Beverages' category during 'Summer Beverages 1997' dates. Return a float rounded to 2 decimals.
+⏳ Running...
+2025-11-27 09:37:45,714 - RouterNode - INFO - 🤔 Routing Question: Total revenue from the 'Beverages' category during...
+2025-11-27 09:37:45,723 - RouterNode - INFO - 👉 Route Selected: hybrid
+ ↳ Finished Node: router
+   Update: {'route': 'hybrid'}
+👉 Router Decision: HYBRID
+--------------------------------------------------
+Question ID: hybrid_best_customer_margin_1997
+Query: Per the KPI definition of gross margin, who was the top customer by gross margin in 1997? Assume CostOfGoods is approximated by 70% of UnitPrice if not available. Return {customer:str, margin:float}.
+⏳ Running...
+2025-11-27 09:37:45,725 - RouterNode - INFO - 🤔 Routing Question: Per the KPI definition of gross margin, who was th...
+2025-11-27 09:37:45,734 - RouterNode - INFO - 👉 Route Selected: hybrid
+ ↳ Finished Node: router
+   Update: {'route': 'hybrid'}
+👉 Router Decision: HYBRID
+--------------------------------------------------
+(retail_agent) jou@jou-MS-7D48:~/Youssef/retail_analytics_copilot$ 
+
+
+
+
+BASELINE ROUTER EVALUATION
+--------------------------
+Date: 2025-11-27
+Model: Phi-3.5-mini-instruct (Ollama)
+
+Results:
+- Raw Model Accuracy: 83.3% (5/6)
+- System Accuracy:   100.0% (6/6)
+
+Notes:
+- Question ID 'hybrid_aov_winter_1997' caused a JSON parsing error (malformed output).
+- The 'try...except' block successfully caught this and applied the default fallback ('hybrid').
+- Since the correct route was 'hybrid', the system successfully recovered.
+

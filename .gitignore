@@ -222,3 +222,6 @@ outputs_hybrid.jsonl
 
 # MY folder report txt file 
 retail_analytics_copilot_report.txt
+
+# The workflow png
+workflow_diagram.png
