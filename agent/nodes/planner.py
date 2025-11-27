@@ -24,7 +24,7 @@ def plan_query(state: AgentState) -> dict:
 
     logger.info(f"🗓️ Planning for: {question[:50]}...")
 
-    # --- Step 1: Format Context ---
+    # Format Context
     if docs:
         context_str = "\n\n".join(
             [
@@ -36,7 +36,7 @@ def plan_query(state: AgentState) -> dict:
         logger.warning("⚠️ No docs found in state. Planner might fail.")
         context_str = ""
 
-    # --- Step 2: Extract Constraints (DSPy) ---
+    # Extract Constraints (DSPy)
     constraints = {}
     try:
         pred = planner_module(question=question, context=context_str)
@@ -46,7 +46,7 @@ def plan_query(state: AgentState) -> dict:
         raw_constraints = pred.constraints
         logger.info(f"📝 Raw Constraints Output: {raw_constraints}")
 
-        # --- Step 3: Parse Logic (Robust) ---
+        # Parse Logic
         # 1. Strip Markdown
         # Validates variable name: cleaned_str used everywhere below
         cleaned_str = raw_constraints.replace("```json", "").replace("```", "").strip()

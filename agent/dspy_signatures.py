@@ -41,3 +41,26 @@ class PlannerSignature(dspy.Signature):
     context = dspy.InputField(desc="Retrieved definitions from the knowledge base.")
 
     constraints = dspy.OutputField(desc="JSON-format dictionary of extracted filters.")
+
+
+class GenerateSQLSignature(dspy.Signature):
+    """
+    Transform a natural language question into a valid, read-only SQLite query.
+
+    Rules:
+    - Use the provided db_schema.
+    - Only use SELECT or WITH (CTEs).
+    - Never try to UPDATE or DROP.
+    - PAY ATTENTION to the 'constraints' field. It contains extracted dates/ids from the docs.
+    """
+
+    question = dspy.InputField(desc="The data question to answer.")
+    db_schema = dspy.InputField(desc="The available database table definitions.")
+    constraints = dspy.InputField(
+        desc="Extracted filters (e.g., dates) from the Planner."
+    )
+    format_hint = dspy.InputField(
+        desc="Hint for the expected return type (guides the SELECT clause)."
+    )
+
+    sql_query = dspy.OutputField(desc="The executable SQLite query string.")

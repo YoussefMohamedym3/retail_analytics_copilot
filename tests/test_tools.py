@@ -52,7 +52,7 @@ def main():
     # ---------------------------------------------------------
     print("--- Testing Schema Visibility ---")
     schema = get_db_schema()
-
+    print(schema)
     # 1. Check valid tables exist
     run_test("Schema contains 'orders'", schema, expected_in_output="Table: orders")
     run_test(

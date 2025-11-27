@@ -10,17 +10,16 @@ class AgentState(TypedDict):
     # --- Inputs ---
     id: str
     question: str
-    format_hint: str  # e.g., "int", "{category:str, quantity:int}"
+    format_hint: str
 
     # --- Orchestration ---
-    route: str  # 'rag', 'sql', 'hybrid'
+    route: str
 
     # --- Planner State ---
     # Stores extracted dates, KPIs, and entities (e.g., {"start_date": "1997-01-01"})
     constraints: Dict[str, Any]
 
     # --- Retrieval State (RAG) ---
-    # List of chunks with content, ids, and scores
     retrieved_docs: List[Dict[str, Any]]
 
     # --- SQL State ---

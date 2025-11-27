@@ -2,6 +2,7 @@ import logging
 
 from langgraph.graph import END, START, StateGraph
 
+from agent.nodes.nl_sql import generate_sql_node  # <--- NEW IMPORT
 from agent.nodes.planner import plan_query
 from agent.nodes.retriever import retrieve_node
 from agent.nodes.router import route_query
@@ -13,7 +14,7 @@ logger = logging.getLogger("GraphHybrid")
 class RetailAnalyticsWorkflow:
     """
     Builds and compiles the LangGraph workflow.
-    Current Phase: Router -> Retriever -> Planner (Logic Verification)
+    Current Phase: Router -> (Retriever->Planner) -> SQL Gen
     """
 
     def __init__(self):
@@ -24,13 +25,12 @@ class RetailAnalyticsWorkflow:
         self.builder.add_node("router", route_query)
         self.builder.add_node("retriever", retrieve_node)
         self.builder.add_node("planner", plan_query)
+        self.builder.add_node("sql_gen", generate_sql_node)  # <--- NEW NODE
 
     def __load_edges(self):
-        # 1. Start -> Router
         self.builder.add_edge(START, "router")
 
-        # 2. Router Logic
-        # Both 'rag' and 'hybrid' need documents, so they both go to Retriever.
+        # Router Logic
         def router_decision(state):
             return state.get("route", "hybrid")
 
@@ -39,25 +39,27 @@ class RetailAnalyticsWorkflow:
             router_decision,
             {
                 "rag": "retriever",
-                "hybrid": "retriever",  # <--- CHANGE: Hybrid now goes to Retriever first
-                "sql": END,
+                "hybrid": "retriever",
+                "sql": "sql_gen",  # <--- Direct SQL path
             },
         )
 
-        # 3. Retriever Logic (The Fork)
-        # After retrieval, where do we go?
+        # Retriever Logic
         def post_retrieval_decision(state):
             route = state.get("route")
             if route == "hybrid":
                 return "planner"
-            return "end"  # 'rag' goes to end for now
+            return "end"  # RAG (policy questions) end here for now
 
         self.builder.add_conditional_edges(
             "retriever", post_retrieval_decision, {"planner": "planner", "end": END}
         )
 
-        # 4. Planner -> END (For now)
-        self.builder.add_edge("planner", END)
+        # Planner -> SQL Gen (Hybrid Path)
+        self.builder.add_edge("planner", "sql_gen")
+
+        # SQL Gen -> END (For verification)
+        self.builder.add_edge("sql_gen", END)
 
     def get_graph(self):
         self.__load_nodes()
@@ -66,7 +68,7 @@ class RetailAnalyticsWorkflow:
         return self.graph
 
 
-# Visualization
+# Visualization (same as before)
 try:
     from IPython.display import Image
 

@@ -18,14 +18,14 @@ _engine = SearchEngine(_chunks)
 
 
 class LocalRetriever:
-    def retrieve(self, query: str, k: int = 3) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, k: int = 5) -> List[Dict[str, Any]]:
         return _engine.search(query, k=k)
 
 
 retriever = LocalRetriever()
 
 
-def retrieve_docs(query: str, k: int = 3) -> str:
+def retrieve_docs(query: str, k: int = 5) -> str:
     """
     Format retrieval results as a string for the LLM context.
     """

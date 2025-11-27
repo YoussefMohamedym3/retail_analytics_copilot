@@ -20,7 +20,7 @@ class SearchEngine:
         ]
         return BM25Okapi(tokenized_corpus)
 
-    def search(self, query: str, k: int = 3) -> List[Dict[str, Any]]:
+    def search(self, query: str, k: int = 5) -> List[Dict[str, Any]]:
         """
         Returns top-k chunks sorted by relevance score.
         Returns Dicts to ensure compatibility with existing evaluation scripts.

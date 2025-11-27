@@ -22,5 +22,4 @@ def retrieve_node(state: AgentState) -> dict:
         # Return empty list on failure so graph doesn't crash
         results = []
 
-    # Update the state with the raw list of dicts
     return {"retrieved_docs": results}

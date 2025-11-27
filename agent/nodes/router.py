@@ -25,6 +25,7 @@ def route_query(state: AgentState) -> dict:
         raw_classification = pred.classification
 
         # didn't happen when testing but just in case to not inc tokens by using pydantic
+        # an update it happend
         decision = (
             raw_classification.strip()
             .lower()
