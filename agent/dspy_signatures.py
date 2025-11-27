@@ -64,3 +64,29 @@ class GenerateSQLSignature(dspy.Signature):
     )
 
     sql_query = dspy.OutputField(desc="The executable SQLite query string.")
+
+
+class RepairSQLSignature(dspy.Signature):
+    """
+    Fix a failing SQL query based on the database error message.
+
+    Strategies:
+    1. Syntax Errors: Fix typos (e.g., "BETWEWEN" -> "BETWEEN").
+    2. Schema Errors: If a column doesn't exist, check the schema and find the correct column/table.
+    3. Logical Errors: If the query returns empty or wrong data, adjust the JOINs or WHERE clauses.
+    """
+
+    question = dspy.InputField(desc="The original user question.")
+    bad_query = dspy.InputField(desc="The SQL query that failed.")
+    error_message = dspy.InputField(desc="The error returned by SQLite.")
+    db_schema = dspy.InputField(
+        desc="The database schema to reference for fixing columns."
+    )
+    constraints = dspy.InputField(
+        desc="Extracted filters from Planner (ensure these are preserved)."
+    )
+    format_hint = dspy.InputField(
+        desc="Hint for the expected return type (guides the SELECT clause)."
+    )
+
+    fixed_sql = dspy.OutputField(desc="The corrected SQLite query string.")
