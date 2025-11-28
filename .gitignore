@@ -214,7 +214,6 @@ data/*.sqlite
 data/*.db
 
 # Exclude assignment output files and logs
-outputs_hybrid.jsonl
 *.log
 
 # Exclude local environment config
