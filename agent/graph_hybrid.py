@@ -8,6 +8,7 @@ from agent.nodes.planner import plan_query
 from agent.nodes.repair import repair_sql_node
 from agent.nodes.retriever import retrieve_node
 from agent.nodes.router import route_query
+from agent.nodes.synthesis import synthesize_answer_node
 from agent.state import AgentState
 
 logger = logging.getLogger("GraphHybrid")
@@ -16,7 +17,7 @@ logger = logging.getLogger("GraphHybrid")
 class RetailAnalyticsWorkflow:
     """
     Builds and compiles the LangGraph workflow.
-    Current Phase: Router -> ... -> Executor -> Repair Loop
+    Current Phase: Final Synthesis
     """
 
     def __init__(self):
@@ -30,11 +31,13 @@ class RetailAnalyticsWorkflow:
         self.builder.add_node("sql_gen", generate_sql_node)
         self.builder.add_node("executor", execute_sql_node)
         self.builder.add_node("repair", repair_sql_node)
+        self.builder.add_node("synthesizer", synthesize_answer_node)
 
     def __load_edges(self):
         self.builder.add_edge(START, "router")
 
         # Router Logic
+        # These keys ("rag", "hybrid", "sql") become the labels on the graph edges
         def router_decision(state):
             return state.get("route", "hybrid")
 
@@ -49,14 +52,16 @@ class RetailAnalyticsWorkflow:
         )
 
         # Retriever Logic
+        # RAG path splits to Synthesizer (Direct answer) or Planner (Hybrid query)
         def post_retrieval_decision(state):
-            route = state.get("route")
-            if route == "hybrid":
-                return "planner"
-            return "end"  # RAG ends here for now
+            if state.get("route") == "hybrid":
+                return "hybrid_plan"
+            return "rag_direct"
 
         self.builder.add_conditional_edges(
-            "retriever", post_retrieval_decision, {"planner": "planner", "end": END}
+            "retriever",
+            post_retrieval_decision,
+            {"hybrid_plan": "planner", "rag_direct": "synthesizer"},
         )
 
         # Planner -> SQL Gen
@@ -71,15 +76,20 @@ class RetailAnalyticsWorkflow:
             steps = state.get("repair_steps", 0)
 
             if is_error and steps < 2:
-                return "repair"  # Loop back
-            return "end"  # Proceed (success or give up)
+                return "repair_needed"
+            return "success_or_max_retries"
 
         self.builder.add_conditional_edges(
-            "executor", post_execution_decision, {"repair": "repair", "end": END}
+            "executor",
+            post_execution_decision,
+            {"repair_needed": "repair", "success_or_max_retries": "synthesizer"},
         )
 
-        # Repair -> Executor (Retry the new query)
+        # Repair -> Executor
         self.builder.add_edge("repair", "executor")
+
+        # Final Node Edges
+        self.builder.add_edge("synthesizer", END)
 
     def get_graph(self):
         self.__load_nodes()

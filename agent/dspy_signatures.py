@@ -52,6 +52,12 @@ class GenerateSQLSignature(dspy.Signature):
     - Only use SELECT or WITH (CTEs).
     - Never try to UPDATE or DROP.
     - PAY ATTENTION to the 'constraints' field. It contains extracted dates/ids from the docs.
+
+    CRITICAL DOMAIN RULES (Follow these strictly):
+    1. Revenue Calculation: Use `SUM(UnitPrice * Quantity * (1 - Discount))` from the `order_items` table.
+    2. CostOfGoods Approximation: The database lacks a cost field. ALWAYS use `(UnitPrice * 0.7)` to approximate Cost.
+       - Gross Margin = `SUM((UnitPrice - (UnitPrice * 0.7)) * Quantity * (1 - Discount))`
+    3. Join Path for Categories: `orders` -> `order_items` -> `products` -> `categories`. Do not join Categories directly to Orders.
     """
 
     question = dspy.InputField(desc="The data question to answer.")
@@ -74,6 +80,11 @@ class RepairSQLSignature(dspy.Signature):
     1. Syntax Errors: Fix typos (e.g., "BETWEWEN" -> "BETWEEN").
     2. Schema Errors: If a column doesn't exist, check the schema and find the correct column/table.
     3. Logical Errors: If the query returns empty or wrong data, adjust the JOINs or WHERE clauses.
+
+    DOMAIN KNOWLEDGE REFRESHER:
+    - CostOfGoods DOES NOT EXIST. Use `UnitPrice * 0.7`.
+    - Revenue = `SUM(UnitPrice * Quantity * (1 - Discount))`.
+    - Join Path: `orders` -> `order_items` -> `products` -> `categories`.
     """
 
     question = dspy.InputField(desc="The original user question.")
@@ -90,3 +101,26 @@ class RepairSQLSignature(dspy.Signature):
     )
 
     fixed_sql = dspy.OutputField(desc="The corrected SQLite query string.")
+
+
+class SynthesizeAnswerSignature(dspy.Signature):
+    """
+    Generate a structured final answer based on the provided Context (RAG) or SQL Results.
+
+    Requirements:
+    1. 'final_answer': Must strictly match the 'format_hint' (e.g., if hint is 'int', return only the number).
+    2. 'citations': List every DB table used (e.g., 'Orders') and every doc chunk ID used (e.g., 'marketing_calendar::chunk0').
+    3. 'explanation': Keep it under 2 sentences.
+    """
+
+    question = dspy.InputField()
+    context = dspy.InputField(desc="Text chunks from RAG (if any).")
+    sql_query = dspy.InputField(desc="The SQL that was run (if any).")
+    sql_result = dspy.InputField(desc="The rows returned from the DB (if any).")
+    format_hint = dspy.InputField(
+        desc="The required format for the final answer (e.g., 'float', 'json')."
+    )
+
+    final_answer = dspy.OutputField(desc="The precise answer matching format_hint.")
+    explanation = dspy.OutputField(desc="Brief justification.")
+    citations = dspy.OutputField(desc="Comma-separated list of sources used.")

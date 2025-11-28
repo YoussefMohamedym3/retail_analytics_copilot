@@ -1,0 +1,153 @@
+{
+  "generate.predict": {
+    "traces": [],
+    "train": [],
+    "demos": [
+      {
+        "augmented": true,
+        "question": "Total revenue for 'Dairy Products' in Summer 1997?",
+        "constraints": "{\"category\": \"Dairy Products\", \"date_range\": \"1997-06-01 to 1997-08-31\"}",
+        "format_hint": "float",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "To calculate the total revenue generated from 'Dairy Products' during Summer 1997, we need to join several tables: orders (to filter by date), order_items (to get unit price and quantity information), products (to link items with their categories), and categories (to identify dairy products). We will sum the product of UnitPrice, Quantity, and discount for all relevant records.",
+        "sql_query": "SELECT ROUND(SUM(oi.UnitPrice * oi.Quantity * (1 - oi.Discount)), 2)\nFROM order_items oi JOIN orders o ON oi.OrderID = o.OrderID\nJOIN products p ON oi.ProductID = p.ProductID\nJOIN categories c ON p.CategoryID = c.CategoryID\nWHERE c.CategoryName = 'Dairy Products' AND o.OrderDate BETWEEN '1997-06-01' AND '1997-08-31';"
+      },
+      {
+        "augmented": true,
+        "question": "Count of distinct products sold in 'Seafood'.",
+        "constraints": "{\"category\": \"Seafood\"}",
+        "format_hint": "int",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "To find the count of distinct products sold in the 'Seafood' category, we need to join the `order_items` table with the `products` table on their common ProductID field and filter for only those records that belong to the 'Seafood' category as indicated by the CategoryName. We then group the results by ProductID to ensure distinct products are counted correctly.",
+        "sql_query": "SELECT COUNT(DISTINCT oi.ProductID) FROM order_items oi JOIN products p ON oi.ProductID = p.ProductID WHERE p.CategoryID IN (SELECT CategoryID FROM categories WHERE CategoryName = 'Seafood');"
+      },
+      {
+        "augmented": true,
+        "question": "Count products in Beverages category",
+        "constraints": "{\"category\": \"Beverages\"}",
+        "format_hint": "int",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "To find the count of products in the 'Beverages' category, we need to join the `products` table with the `categories` table on their common CategoryID field. We will filter by the CategoryName where it equals \"Beverages\" and then perform a COUNT aggregation on ProductID. This query assumes that there is only one row in the categories table for each category name, which should be true as per normal database design practices with unique constraints like PRIMARY KEY (CategoryID).",
+        "sql_query": "SELECT COUNT(DISTINCT p.ProductID) FROM products p JOIN categories c ON p.CategoryID = c.CategoryID WHERE c.CategoryName = 'Beverages'"
+      },
+      {
+        "augmented": true,
+        "question": "What is the Average Order Value (AOV)?",
+        "constraints": "{\"formula\": \"TotalRevenue / DistinctOrders\"}",
+        "format_hint": "float",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "To calculate the Average Order Value (AOV), we need to find the total revenue generated from all orders and divide it by the number of distinct orders. The SQL query will sum up the revenues for each order using `UnitPrice`, `Quantity`, and `Discount` fields, then count the unique number of orders with a DISTINCT clause on OrderID within the same SELECT statement.",
+        "sql_query": "SELECT ROUND(SUM(oi.UnitPrice * oi.Quantity * (1 - oi.Discount)) / COUNT(DISTINCT o.OrderID), 2) FROM order_items oi JOIN orders o ON oi.OrderID = o.OrderID"
+      },
+      {
+        "augmented": true,
+        "question": "Count of orders shipped to Canada.",
+        "constraints": "{\"country\": \"Canada\"}",
+        "format_hint": "int",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "To determine the count of orders shipped to Canada, we need to join the 'orders' table with itself based on OrderID while filtering by the ShipCountry column where the country is set to \"Canada\". This will allow us to group the results and count the number of unique order IDs that meet this criterion.",
+        "sql_query": "SELECT COUNT(DISTINCT o.OrderID) FROM orders o JOIN customers c ON o.CustomerID = c.CustomerID WHERE o.ShipCountry = 'Canada'"
+      },
+      {
+        "augmented": true,
+        "question": "Count of distinct countries we ship to.",
+        "constraints": "{}",
+        "format_hint": "int",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "To determine the count of distinct countries we ship to, we need to aggregate unique country names from the orders table. This involves joining the 'orders' table with itself on CustomerID where necessary and selecting only the distinct values from the Country column in the resulting dataset. The COUNT function will then be used to get the total number of these unique entries.",
+        "sql_query": "SELECT COUNT(DISTINCT o.ShipCountry) FROM orders o;"
+      },
+      {
+        "augmented": true,
+        "question": "How many orders were shipped after Dec 1st 1997?",
+        "constraints": "{\"date\": \"1997-12-01\"}",
+        "format_hint": "int",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "To determine the number of orders shipped after December 1st, 1997, we need to count all order records where the ShippedDate is greater than '1997-12-01'. This requires a comparison between the OrderDate and ShippedDate fields in the `orders` table.",
+        "sql_query": "SELECT COUNT(*) FROM orders WHERE ShippedDate > '1997-12-01';"
+      },
+      {
+        "augmented": true,
+        "question": "Number of suppliers in USA.",
+        "constraints": "{\"country\": \"USA\"}",
+        "format_hint": "int",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "To find out the number of suppliers located in the USA, we need to count distinct SupplierID entries from the 'suppliers' table where the Country column is set to \"USA\". This query will join the 'suppliers' table with itself and filter for rows where the country matches \"USA\", ensuring that each supplier is only counted once.",
+        "sql_query": "SELECT COUNT(DISTINCT s1.SupplierID) FROM suppliers s1 WHERE s1.Country = 'USA';"
+      },
+      {
+        "augmented": true,
+        "question": "How many categories do we have?",
+        "constraints": "{}",
+        "format_hint": "int",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "To determine the number of distinct categories in the database, we need to count the unique entries in the 'CategoryID' column from the 'categories' table. This requires a simple COUNT aggregation function on this field with a GROUP BY clause that ensures each category is counted only once.",
+        "sql_query": "SELECT COUNT(DISTINCT CategoryID) FROM categories;"
+      },
+      {
+        "augmented": true,
+        "question": "Orders placed in Q1 1997.",
+        "constraints": "{\"start\": \"1997-01-01\", \"end\": \"1997-03-31\"}",
+        "format_hint": "int",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "The task requires us to calculate the total number of orders placed within the first quarter (Q1) of 1997. Q1 starts on January 1st and ends on March 31st. The query should count all distinct order IDs that fall within this date range, ensuring we only consider completed or relevant transactions during these months.",
+        "sql_query": "SELECT COUNT(DISTINCT OrderID) FROM orders WHERE OrderDate BETWEEN '1997-01-01' AND '1997-03-31';"
+      },
+      {
+        "augmented": true,
+        "question": "Which product category had the highest quantity sold in Summer Beverages 1997?",
+        "constraints": "{\"date_range\": \"1997-06-01 to 1997-06-30\", \"focus\": \"Beverages\"}",
+        "format_hint": "{category:str, quantity:int}",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "To find out which product category had the highest quantity sold in Summer Beverages during 1997, we need to calculate the total quantities of products sold within that period. We will join the relevant tables (`orders`, `order_items`, and `products`) based on their relationships (Orders with OrderItems through ProductID, and Orders with Products through ProductID), filter by orders made in June 1997 which fall under 'Beverages' category, group the results by CategoryName to aggregate quantities per product category, and then order the result set in descending order of quantity sold so that the first row will be the one with the highest sales.",
+        "sql_query": "SELECT c.CategoryName, SUM(oi.Quantity) AS total_quantity \nFROM orders o \nJOIN order_items oi ON o.OrderID = oi.OrderID JOIN products p ON oi.ProductID = p.ProductID JOIN categories c ON p.CategoryID = c.CategoryID \nWHERE o.OrderDate BETWEEN '1997-06-01' AND '1997-06-30' AND c.CategoryName = 'Beverages' \nGROUP BY c.CategoryName \nORDER BY total_quantity DESC LIMIT 1;"
+      },
+      {
+        "augmented": true,
+        "question": "Top 3 products by revenue in 1997.",
+        "constraints": "{\"year\": \"1997\"}",
+        "format_hint": "list",
+        "db_schema": "\nTable: categories\nColumns: CategoryID (INTEGER) [PK], CategoryName (TEXT), Description (TEXT)\n\nTable: customers\nColumns: CustomerID (TEXT) [PK], CompanyName (TEXT), ContactName (TEXT), Country (TEXT), City (TEXT)\n\nTable: order_items\nColumns: OrderID (INTEGER) [PK], ProductID (INTEGER) [PK], UnitPrice (NUMERIC), Quantity (INTEGER), Discount (REAL)\n\nTable: orders\nColumns: OrderID (INTEGER) [PK], CustomerID (TEXT), OrderDate (DATETIME), ShippedDate (DATETIME), Freight (NUMERIC), ShipCountry (TEXT)\n\nTable: products\nColumns: ProductID (INTEGER) [PK], ProductName (TEXT), SupplierID (INTEGER), CategoryID (INTEGER), UnitPrice (NUMERIC), UnitsInStock (INTEGER), Discontinued (TEXT)\n\nTable: suppliers\nColumns: SupplierID (INTEGER) [PK], CompanyName (TEXT), Country (TEXT)\n",
+        "reasoning": "To find the top 3 products by revenue in 1997, we need to calculate the total revenue generated by each product within that year. This involves summing up the sales (UnitPrice * Quantity) for all orders associated with each product after applying any discounts and then grouping the results by ProductID. We will filter the records to only include those from 1997, order the products by their calculated revenue in descending order, and limit the output to the top 3.",
+        "sql_query": "SELECT p.ProductName, SUM(oi.UnitPrice * oi.Quantity * (1 - oi.Discount)) AS Revenue\nFROM order_items oi JOIN products p ON oi.ProductID = p.ProductID\nJOIN orders o ON oi.OrderID = o.OrderID\nWHERE strftime('%Y', o.OrderDate) = '1997'\nGROUP BY p.ProductID\nORDER BY Revenue DESC\nLIMIT 3"
+      }
+    ],
+    "signature": {
+      "instructions": "Transform a natural language question into a valid, read-only SQLite query.\n\nRules:\n- Use the provided db_schema.\n- Only use SELECT or WITH (CTEs).\n- Never try to UPDATE or DROP.\n- PAY ATTENTION to the 'constraints' field. It contains extracted dates/ids from the docs.\n\nCRITICAL DOMAIN RULES (Follow these strictly):\n1. Revenue Calculation: Use `SUM(UnitPrice * Quantity * (1 - Discount))` from the `order_items` table.\n2. CostOfGoods Approximation: The database lacks a cost field. ALWAYS use `(UnitPrice * 0.7)` to approximate Cost.\n   - Gross Margin = `SUM((UnitPrice - (UnitPrice * 0.7)) * Quantity * (1 - Discount))`\n3. Join Path for Categories: `orders` -> `order_items` -> `products` -> `categories`. Do not join Categories directly to Orders.",
+      "fields": [
+        {
+          "prefix": "Question:",
+          "description": "The data question to answer."
+        },
+        {
+          "prefix": "Db Schema:",
+          "description": "The available database table definitions."
+        },
+        {
+          "prefix": "Constraints:",
+          "description": "Extracted filters (e.g., dates) from the Planner."
+        },
+        {
+          "prefix": "Format Hint:",
+          "description": "Hint for the expected return type (guides the SELECT clause)."
+        },
+        {
+          "prefix": "Reasoning: Let's think step by step in order to",
+          "description": "${reasoning}"
+        },
+        {
+          "prefix": "Sql Query:",
+          "description": "The executable SQLite query string."
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.11",
+      "dspy": "3.0.4",
+      "cloudpickle": "3.1"
+    }
+  }
+}
