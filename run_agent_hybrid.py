@@ -67,13 +67,12 @@ def main(batch, out):
                     "repair_steps": 0,
                     "citations": [],
                 }
-
-                # Run Graph
+                config = {"configurable": {"thread_id": input_row.id}}  # Run Graph
                 print("⏳ Running Graph...")
                 final_state = initial_state.copy()
 
                 # Stream to print intermediate steps
-                for step in app.stream(initial_state):
+                for step in app.stream(initial_state, config=config):
                     for node_name, update in step.items():
                         rprint(f"[dim] ↳ Finished Node: [bold]{node_name}[/bold][/dim]")
                         final_state.update(update)
