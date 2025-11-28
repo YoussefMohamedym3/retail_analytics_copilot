@@ -223,4 +223,4 @@ data/*.db
 retail_analytics_copilot_report.txt
 
 # The workflow png
-workflow_diagram.png
+# workflow_diagram.png
